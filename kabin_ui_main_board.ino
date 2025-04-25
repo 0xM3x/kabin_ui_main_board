@@ -72,7 +72,7 @@ typedef struct struct_message {
   float gaz;
   float nem;
   int doluluk;
-  //bool show_press_screen;
+  bool show_press_screen;
 } struct_message;
 
 struct_message outgoingData;
@@ -179,7 +179,7 @@ void loop() {
     outgoingData.doluluk = doluluk;
 
     esp_err_t result = esp_now_send(screenMac, (uint8_t *)&outgoingData, sizeof(outgoingData));
-
+    outgoingData.show_press_screen = false; // Reset
     Serial.print("ESP-NOW send result: ");
     Serial.println(result);
 
@@ -238,10 +238,12 @@ void mqttMessageReceived(String &topic, String &payload) {
   if (topicParts[3] == "BIN-RELEASE") {
     doDoorReleaseCommand();
     doDrawerReleaseCommand();
+  
   } else if (topicParts[3] == "BIN-SERVOUP") {
     digitalWrite(pinServoUP, LOW); 
     delay(1000);
     digitalWrite(pinServoUP, HIGH);
+    outgoingData.show_press_screen = true;
   
   } else if (topicParts[3] == "BIN-SERVODOWN") {
     digitalWrite(pinServoDOWN, LOW);
